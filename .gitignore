@@ -1,0 +1,37 @@
+# Arquivos e pastas do Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+# Ambiente virtual
+venv/
+.env
+*.venv
+Pipfile
+Pipfile.lock
+
+# Configuração de IDEs
+.vscode/
+.idea/
+*.sublime-workspace
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db
+
+# Dados do projeto
+news_storage.json
+*.db
+*.sqlite
+*.csv
+*.xlsx
+
+# Dependências
+requirements.txt
+
+# Logs e Debug
+*.log
+debug.log
+error.log
