@@ -7,46 +7,32 @@ class NewsStorage:
         self.news = self.load_news()
 
     def load_news(self):
-        """Carrega as notícias do arquivo JSON, se existir."""
         if os.path.exists(self.file_path):
-            try:
-                with open(self.file_path, "r", encoding="utf-8") as f:
-                    return json.load(f)
-            except json.JSONDecodeError:
-                print("⚠️ Arquivo JSON corrompido. Criando um novo arquivo limpo.")
-                return []
+            with open(self.file_path, "r", encoding="utf-8") as file:
+                try:
+                    return json.load(file)
+                except json.JSONDecodeError:
+                    return []
         return []
 
-    def save_news(self):
-        """Salva todas as notícias sem apagar as antigas."""
-        if not self.news:
-            print("⚠️ Nenhuma notícia para salvar. O arquivo JSON não será modificado.")
-            return
+    def save_news(self, news_data):
+        with open(self.file_path, "w", encoding="utf-8") as file:
+            json.dump(news_data, file, indent=4, ensure_ascii=False)
 
-        with open(self.file_path, "w", encoding="utf-8") as f:
-            json.dump(self.news, f, indent=4, ensure_ascii=False)
-        
-        print(f"✅ {len(self.news)} notícias salvas em {self.file_path}")
+    def add_news(self, title, link, date, content, image_url, video_urls):
+        if not self.news_exists(title):
+            self.news.append({
+                "title": title,
+                "link": link,
+                "date": date,
+                "content": content,
+                "image_url": image_url,
+                "video_urls": video_urls
+            })
+            self.save_news(self.news)
 
     def news_exists(self, title):
-        """Verifica se uma notícia já foi armazenada pelo título."""
         return any(news["title"] == title for news in self.news)
 
-    def add_news(self, title, link, date, content, image_url=None, video_urls=None):
-        """Adiciona uma nova notícia sem sobrescrever as antigas."""
-        if self.news_exists(title):
-            print(f"⚠️ Notícia já armazenada: {title}")
-            return
-        
-        new_article = {
-            "title": title,
-            "link": link,
-            "date": date,
-            "content": content,
-            "image_url": image_url,
-            "video_urls": video_urls if video_urls else []
-        }
-
-        self.news.append(new_article)
-        self.save_news()
-
+    def get_all_news(self):
+        return self.news

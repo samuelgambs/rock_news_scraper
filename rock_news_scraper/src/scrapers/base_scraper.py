@@ -1,80 +1,71 @@
 import requests
-import time
-import random
-import logging
 from bs4 import BeautifulSoup
-from fake_useragent import UserAgent
+from datetime import datetime
+from src.utils.news_storage import NewsStorage
+from dateutil import parser
 
 class BaseScraper:
-    """
-    Classe base para scrapers de notícias.
-    """
-    def __init__(self, base_url, max_retries=3, delay_range=(1, 3), use_proxies=False):
+    def __init__(self, base_url, source):
         self.base_url = base_url
-        self.max_retries = max_retries
-        self.delay_range = delay_range
-        self.use_proxies = use_proxies
-        self.session = requests.Session()
-        self.user_agent = UserAgent()
+        self.source = source
+        self.headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
+        self.storage = NewsStorage()
 
-        # Configuração de logging
-        logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+    def fetch_articles(self, limit=1):
+        response = requests.get(self.base_url, headers=self.headers)
+        if response.status_code != 200:
+            print(f"❌ Erro ao acessar {self.source}: {response.status_code}")
+            return []
 
-    def get_headers(self):
-        """Gera cabeçalhos HTTP aleatórios."""
-        return {
-            "User-Agent": self.user_agent.random,
-            "Accept-Language": "en-US,en;q=0.5"
-        }
+        soup = BeautifulSoup(response.content, "xml")
+        items = soup.find_all("item")[:limit]
+        all_articles = []
 
-    def get_html(self, url):
-        """
-        Obtém o HTML da página, tratando falhas e bloqueios.
-        """
-        retries = 0
-        while retries < self.max_retries:
+        for item in items:
+            title = item.find("title").text.strip()
+            link = item.find("link").text.strip()
+            date = item.find("pubDate").text.strip()
             try:
-                logging.info(f"📡 Acessando {url} (Tentativa {retries + 1})")
-                
-                response = self.session.get(url, headers=self.get_headers(), timeout=10)
-                
-                if response.status_code == 200:
-                    return response.text
-                elif response.status_code == 403:
-                    logging.warning("🚨 Acesso negado (403). Pode ser necessário um proxy ou rotação de User-Agent.")
-                elif response.status_code == 404:
-                    logging.error("❌ Página não encontrada (404).")
-                    return None
-                
-                retries += 1
-                time.sleep(random.uniform(*self.delay_range))
+                date = parser.parse(date).isoformat()
+            except ValueError as e:
+                print(f"⚠️ Erro ao processar a data: {date}. Usando 'Unknown'.")
+                date = "Unknown"
+            content, image_url, video_urls = self.fetch_article_content(link)
+            
+            if not content:
+                print(f"⚠️ Conteúdo vazio para {title}. Parando a execução.")
+                exit(1)
 
-            except requests.RequestException as e:
-                logging.error(f"⚠️ Erro ao acessar {url}: {e}")
-                retries += 1
-                time.sleep(random.uniform(*self.delay_range))
+            self.storage.add_news(title, link, date, content, image_url, video_urls)
+            all_articles.append({
+                "title": title,
+                "link": link,
+                "date": date,
+                "content": content,
+                "image_url": image_url,
+                "video_urls": video_urls,
+                "source": self.source
+            })
 
-        logging.error(f"❌ Falha ao obter HTML após {self.max_retries} tentativas: {url}")
-        return None
+        return all_articles
 
-    def parse_html(self, html):
-        """
-        Converte HTML bruto em um objeto BeautifulSoup.
-        """
-        return BeautifulSoup(html, "html.parser")
+    def fetch_article_content(self, url):
+        response = requests.get(url, headers=self.headers)
+        if response.status_code != 200:
+            return "", "", []
 
-    def normalize_url(self, url):
-        """
-        Normaliza URLs para evitar problemas de redirecionamento.
-        """
-        if not url.startswith("http"):
-            return f"{self.base_url.rstrip('/')}/{url.lstrip('/')}"
-        return url
+        soup = BeautifulSoup(response.content, "html.parser")
+        article_body = soup.find("div", class_="news-content")
+        if not article_body:
+            return "", "", []
 
-# Exemplo de uso
-if __name__ == "__main__":
-    scraper = BaseScraper("https://example.com")
-    html = scraper.get_html("https://example.com/news")
-    if html:
-        soup = scraper.parse_html(html)
-        print(soup.title.text)
+        paragraphs = article_body.find_all("p")
+        content = "\n".join(p.text.strip() for p in paragraphs if p.text.strip())
+
+        image = soup.find("meta", property="og:image")
+        image_url = image["content"] if image else ""
+
+        videos = soup.find_all("iframe")
+        video_urls = [vid["src"] for vid in videos if "youtube" in vid["src"]]
+
+        return content, image_url, video_urls
