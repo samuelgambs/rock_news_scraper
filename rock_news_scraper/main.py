@@ -5,13 +5,12 @@ from src.scrapers.metalinjection_scraper import MetalInjectionScraper
 from src.scrapers.loudwire_scraper import LoudwireScraper
 from src.scrapers.metaltalk_scraper import MetalTalkScraper
 from src.scrapers.metalsucks_scraper import MetalSucksScraper
-from src.scrapers.metalhammer_scraper import MetalHammerScraper
 from src.utils.news_storage import NewsStorage
 from src.utils.extract_named_entities import process_news_entities
 from src.utils.translator import translate_news
 
 # 🔥 Defina o limite de notícias por site
-LIMIT_PER_SITE = 5 
+LIMIT_PER_SITE = 1
 
 def main():
     """Fluxo principal do script"""
@@ -32,24 +31,23 @@ def main():
         # LoudwireScraper(storage),
         # MetalTalkScraper(storage),
         # MetalSucksScraper(storage),
-        # MetalHammerScraper(storage)
     ]
 
-    # 🔍 Coleta notícias de cada site
+    # 1️⃣ Coletar notícias
     for scraper in scrapers:
-        print(f"🔍 Coletando notícias de {scraper.source}...")
+        print(f"🔍 Coletando notícias de {scraper.__class__.__name__}...")
         scraper.fetch_articles(limit=LIMIT_PER_SITE)
-        print(f"✅ Notícias coletadas com sucesso de {scraper.source}!")
 
-    # 🧠 Processa entidades nomeadas
-    print("🧠 Processando entidades nomeadas nas notícias...")
-    process_news_entities(storage)
-    print("✅ Entidades nomeadas extraídas e salvas com sucesso!")
+    print("✅ Todas as notícias foram coletadas com sucesso!")
 
-    # 🌎 Traduz notícias para português
+    # 2️⃣ Traduzir antes de processar as entidades
     print("🌎 Traduzindo notícias para Português...")
     translate_news(storage)
-    print("✅ Tradução concluída e salva com sucesso!")
 
+    # 3️⃣ Processar entidades no texto traduzido
+    print("🧠 Processando entidades nomeadas nas notícias traduzidas...")
+    process_news_entities(storage)
+
+    print("✅ Processo finalizado!")
 if __name__ == "__main__":
     main()
