@@ -36,3 +36,19 @@ class NewsStorage:
 
     def get_all_news(self):
         return self.news
+    
+    def _load_titles(self):
+        if os.path.exists(self.file_name):
+            with open(self.file_name, "r", encoding="utf-8") as file:
+                return json.load(file)
+        return []
+
+    def get_published_titles(self):
+        return self._load_titles
+
+    def add_published_title(self, title):
+        if title not in self.published_titles:
+            self.published_titles.append(title)
+            with open(self.file_name, "w", encoding="utf-8") as file:
+                json.dump(self.published_titles, file, indent=4, ensure_ascii=False)
+

@@ -37,7 +37,7 @@ class LoudwireScraper(BaseScraper):
             
             self.storage.add_news(title, link, date, content, image_url, video_urls)
         
-        print(f"✅ Notícias coletadas com sucesso de Brave Words!")
+        print(f"✅ Notícias coletadas com sucesso de Loudwire!")
 
     def fetch_article_details(self, url):
         """Extrai detalhes do artigo (conteúdo, imagem e vídeos)."""
@@ -57,7 +57,7 @@ class LoudwireScraper(BaseScraper):
         image_url = image_tag["content"] if image_tag else ""
 
         # Captura vídeos
-        video_urls = [iframe["src"] for iframe in soup.find_all(self.video_selector) if "src" in iframe.attrs]
+        video_urls = self.fetch_article_videos(url)
 
         return content, image_url, video_urls
 

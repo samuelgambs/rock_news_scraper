@@ -12,15 +12,15 @@ from src.utils.wordpress_publisher import postar_no_wordpress
 
 
 # 🔥 Defina o limite de notícias por site
-LIMIT_PER_SITE = 5
+LIMIT_PER_SITE = 1
 
 def main():
     """Fluxo principal do script"""
     
     # 🗑️ Exclui o arquivo de armazenamento antes de começar
-    # if os.path.exists("news_storage.json"):
-    #     os.remove("news_storage.json")
-    #     print("🗑️ Arquivo news_storage.json excluído antes da execução.")
+    if os.path.exists("news_storage.json"):
+        os.remove("news_storage.json")
+        print("🗑️ Arquivo news_storage.json excluído antes da execução.")
 
     # 📦 Inicializa o armazenamento
     storage = NewsStorage()
@@ -29,10 +29,10 @@ def main():
     scrapers = [
         BlabbermouthScraper(storage),
         BraveWordsScraper(storage),
-        MetalInjectionScraper(storage),
-        LoudwireScraper(storage),
-        MetalTalkScraper(storage),
-        MetalSucksScraper(storage),
+        # MetalInjectionScraper(storage),
+        # LoudwireScraper(storage),
+        # MetalTalkScraper(storage),
+        # MetalSucksScraper(storage),
     ]
 
     # 1️⃣ Coletar notícias
@@ -52,6 +52,7 @@ def main():
 
     # 4️⃣ Publicar no WordPress
     print("📝 Publicando notícias no WordPress...")
+    import pdb; pdb.set_trace()
     postar_no_wordpress(storage)
 
     print("✅ Processo finalizado!")

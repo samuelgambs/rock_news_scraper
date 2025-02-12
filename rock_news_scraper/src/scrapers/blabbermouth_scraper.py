@@ -54,7 +54,7 @@ class BlabbermouthScraper(BaseScraper):
         image_url = image_tag["content"] if image_tag else ""
 
         # Captura vídeos
-        video_urls = [iframe["src"] for iframe in soup.find_all(self.video_selector) if "src" in iframe.attrs]
+        video_urls = self.fetch_article_videos(url)
 
         return content, image_url, video_urls
 

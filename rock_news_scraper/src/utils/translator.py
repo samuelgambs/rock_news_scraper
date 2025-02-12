@@ -29,15 +29,43 @@ class Translator:
             translated_chunks.append(self.tokenizer.decode(translated[0], skip_special_tokens=True))
 
         return " ".join(translated_chunks)
+        
+    # def translate_news(storage):
+    #     """Traduz notícias para português e atualiza o JSON sem duplicar"""
+    #     translator = Translator()
+    #     updated = False  # Flag para evitar salvamentos desnecessários
+        
+    #     for news in storage.get_all_news():
+    #         # Verifica se já foi traduzido para evitar duplicação
+    #         if "translated_content" not in news or not news["translated_content"]:
+    #             print(f"🌎 Traduzindo título: {news['title']}...")
+    #             translated_title = translator.translate_text(news["title"])
+    #             print(f"✅ Título traduzido: {translated_title}")
+
+    #             print(f"🌎 Traduzindo conteúdo: {news['title']}...")
+    #             translated_text = translator.translate_text(news["content"])
+    #             print(f"✅ Tradução concluída para: {news['title']}!")
+
+    #             # Armazena as traduções
+    #             news["translated_title"] = translated_title
+    #             news["translated_content"] = translated_text
+    #             updated = True  # Marca que houve alteração
+                
+    #             # Salvamento progressivo para evitar perdas
+    #             storage.save_news(storage.get_all_news())
+
+    #     # Salva novamente no final para garantir integridade
+    #     if updated:
+    #         storage.save_news(storage.get_all_news())
+    #         print("✅ Todas as traduções foram salvas!")
     
+
 def translate_news(storage):
     """Traduz notícias para português e atualiza o JSON sem duplicar"""
     translator = Translator()
-    updated = False  # Flag para evitar salvamentos desnecessários
     
     for news in storage.get_all_news():
-        # Verifica se já foi traduzido para evitar duplicação
-        if "translated_content" not in news or not news["translated_content"]:
+        if "translated_content" not in news or not news["translated_content"]:  # Evita traduzir duplicado
             print(f"🌎 Traduzindo título: {news['title']}...")
             translated_title = translator.translate_text(news["title"])
             print(f"✅ Título traduzido: {translated_title}")
@@ -46,30 +74,9 @@ def translate_news(storage):
             translated_text = translator.translate_text(news["content"])
             print(f"✅ Tradução concluída para: {news['title']}!")
 
-            # Armazena as traduções
+                # Armazena as traduções
             news["translated_title"] = translated_title
             news["translated_content"] = translated_text
-            updated = True  # Marca que houve alteração
-            
-            # Salvamento progressivo para evitar perdas
-            storage.save_news(storage.get_all_news())
 
-    # Salva novamente no final para garantir integridade
-    if updated:
-        storage.save_news(storage.get_all_news())
-        print("✅ Todas as traduções foram salvas!")
-    
-
-# def translate_news(storage):
-#     """Traduz notícias para português e atualiza o JSON sem duplicar"""
-#     translator = Translator()
-    
-#     for news in storage.get_all_news():
-#         if "translated_content" not in news or not news["translated_content"]:  # Evita traduzir duplicado
-#             print(f"🌎 Traduzindo: {news['title']}...")
-#             translated_text = translator.translate_text(news["content"])
-#             news["translated_content"] = translated_text
-#             print(f"✅ Tradução concluída para: {news['title']}!")
-
-#     # Salva apenas no final
-#     storage.save_news(storage.get_all_news())
+    # Salva apenas no final
+    storage.save_news(storage.get_all_news())
