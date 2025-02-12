@@ -26,11 +26,9 @@ pydantic
 Pygments
 python-dotenv
 python-wordpress-xmlrpc
-pywin32
 requests
 rich
 schedule
-selenium
 soupsieve
 spacy
 srsly
@@ -40,6 +38,5 @@ typer
 typing_extensions
 urllib3
 wasabi
-watchdog
 webdriver-manager
 websocket-client
