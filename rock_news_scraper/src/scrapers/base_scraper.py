@@ -2,8 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 import time
-from selenium.webdriver.chrome.options import Options
-from selenium import webdriver
+
 
 class BaseScraper:
     def __init__(self, base_url, article_selector, title_selector, link_selector, date_selector, content_selector, image_selector, video_selector, storage):

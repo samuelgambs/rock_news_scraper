@@ -1,7 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
-from dateutil import parser
 from src.utils.news_storage import NewsStorage
 from src.scrapers.base_scraper import BaseScraper
 

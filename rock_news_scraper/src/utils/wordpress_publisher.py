@@ -5,7 +5,6 @@ import os
 from wordpress_xmlrpc import Client, WordPressPost
 from wordpress_xmlrpc.methods.posts import NewPost
 from wordpress_xmlrpc.methods.media import UploadFile
-from wordpress_xmlrpc.compat import xmlrpc_client
 from wordpress_xmlrpc.methods.taxonomies import GetTerms, NewTerm
 import collections.abc
 
@@ -15,6 +14,10 @@ import os
 WORDPRESS_URL = os.getenv("WORDPRESS_URL")
 WORDPRESS_USER = os.getenv("WORDPRESS_USER")
 WORDPRESS_PASSWORD = os.getenv("WORDPRESS_PASSWORD")
+
+WORDPRESS_URL = "https://o18.277.myftpupload.com/xmlrpc.php"
+WORDPRESS_USER = "mndadmin"
+WORDPRESS_PASSWORD="Metal38COn82zd$(t$h3EI%i"
 
 def format_videos(video_urls):
     """Gera o código embed do YouTube para os vídeos"""
