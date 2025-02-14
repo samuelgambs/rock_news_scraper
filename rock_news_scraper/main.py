@@ -21,7 +21,7 @@ WORDPRESS_PASSWORD = os.getenv("WORDPRESS_PASSWORD")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 # 🔥 Defina o limite de notícias por site
-LIMIT_PER_SITE = 1
+LIMIT_PER_SITE = 5
 
 def main():
     """Fluxo principal do script"""
@@ -75,6 +75,8 @@ def main():
         scraper.fetch_articles(limit=LIMIT_PER_SITE)
 
     print("✅ Todas as notícias foram coletadas com sucesso!")
+
+
 
     # 2️⃣ Traduzir antes de processar as entidades
     print("🌎 Traduzindo notícias para Português...")
