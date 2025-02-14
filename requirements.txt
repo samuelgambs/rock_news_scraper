@@ -41,3 +41,5 @@ websocket-client
 sentencepiece 
 google-cloud-translate
 lxml
+fastapi
+uvicorn
