@@ -4,9 +4,9 @@ import base64
 from requests.auth import HTTPBasicAuth
 
 # 🔧 Configurações do WordPress (use variáveis de ambiente para segurança)
-WORDPRESS_URL = "https://metalneverdie.com.br"
-WORDPRESS_USER = "mndadmin"
-WORDPRESS_APP_PASSWORD = "KUamcBwdMNiPmwKqOT6bY4qO"
+WORDPRESS_URL = os.getenv("WORDPRESS_URL", "https://metalneverdie.com.br")
+WORDPRESS_USER = os.getenv("WORDPRESS_USER", "mndadmin")
+WORDPRESS_APP_PASSWORD = os.getenv("WORDPRESS_APP_PASSWORD", "KUamcBwdMNiPmwKqOT6bY4qO")
 
 # Endpoints da API REST do WordPress
 POSTS_ENDPOINT = f"{WORDPRESS_URL}/wp-json/wp/v2/posts"
@@ -38,8 +38,6 @@ def get_published_titles():
     if response.status_code == 200:
         return {post["title"]["rendered"] for post in response.json()}
     else:
-        import pdb
-        pdb.set_trace()
         print(f"⚠️ Erro ao buscar posts existentes: {response.status_code}, {response.text}")
         return set()
 
@@ -65,13 +63,9 @@ def upload_image_to_wordpress(image_url):
     # Lê a imagem para envio
     with open(filename, "rb") as img:
         files = {"file": (filename, img, "image/jpeg")}
-        headers = {
-            "Authorization": f"Basic {auth_encoded}",
-            "Content-Disposition": f"attachment; filename={filename}",
-        }
-        response = requests.post(f"{WORDPRESS_URL}/wp-json/wp/v2/media", headers=headers, files=files)
+        response = requests.post(MEDIA_ENDPOINT, headers=HEADERS, files=files)
 
-    os.remove(filename)
+    os.remove(filename)  # Remove a imagem local
 
     if response.status_code == 201:
         print(f"✅ Imagem enviada com sucesso! ID: {response.json()['id']}")

@@ -7,9 +7,16 @@ from src.scrapers.metaltalk_scraper import MetalTalkScraper
 from src.scrapers.metalsucks_scraper import MetalSucksScraper
 from src.utils.news_storage import NewsStorage
 # from src.utils.extract_named_entities import process_news_entities
-from src.utils.translator import translate_news
+# from src.utils.translator import translate_news
 from src.utils.wordpress_publisher import postar_no_wordpress
 from dotenv import load_dotenv
+import os
+# from google.cloud import translate_v2 as translate
+from supabase import create_client, Client
+from src.utils.openai_utils import OpenAIUtils
+# from src.utils.gemini_utils import GeminiUtils
+import os
+
 
 # Carrega as variáveis do arquivo .env.local
 load_dotenv(".env.local")
@@ -19,20 +26,25 @@ WORDPRESS_URL = os.getenv("WORDPRESS_URL")
 WORDPRESS_USER = os.getenv("WORDPRESS_USER")
 WORDPRESS_PASSWORD = os.getenv("WORDPRESS_PASSWORD")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 # 🔥 Defina o limite de notícias por site
-LIMIT_PER_SITE = 1
+LIMIT_PER_SITE = 10
 
 def main():
     """Fluxo principal do script"""
     
     # 🗑️ Exclui o arquivo de armazenamento antes de começar
-    # if os.path.exists("news_storage.json"):
-    #     os.remove("news_storage.json")
-    #     print("🗑️ Arquivo news_storage.json excluído antes da execução.")
+    if os.path.exists("news_storage.json"):
+        os.remove("news_storage.json")
+        print("🗑️ Arquivo news_storage.json excluído antes da execução.")
 
     # 📦 Inicializa o armazenamento
     storage = NewsStorage()
+    # gemini_utils = GeminiUtils()
+    openai_utils = OpenAIUtils()
+
     # translate = Translator()
 
 
@@ -76,9 +88,13 @@ def main():
 
     print("✅ Todas as notícias foram coletadas com sucesso!")
 
+
+
     # 2️⃣ Traduzir antes de processar as entidades
     print("🌎 Traduzindo notícias para Português...")
-    translate_news(storage)
+    openai_utils.translate_news(storage)
+    # gemini_utils.translate_news(storage)
+
 
     # 3️⃣ Processar entidades no texto traduzido
     # print("🧠 Processando entidades nomeadas nas notícias traduzidas...")
@@ -90,4 +106,6 @@ def main():
 
     print("✅ Processo finalizado!")
 if __name__ == "__main__":
+    # test_openai_connection()
+    # check_google_translate()
     main()

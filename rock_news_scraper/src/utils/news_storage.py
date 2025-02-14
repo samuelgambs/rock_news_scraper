@@ -59,6 +59,7 @@
 import json
 import os
 from supabase import create_client, Client
+from datetime import datetime
 
 class NewsStorage:
     def __init__(self, file_path="news_storage.json"):
@@ -123,11 +124,12 @@ class NewsStorage:
         response = self.client.table("news").select("title").execute()
         return [news["title"] for news in response.data] if response.data else []
     
-    def update_translated_news_db(self, title, translated_title, translated_content):
-        """Atualiza a notícia com a tradução no Supabase."""
+    def update_translated_news_db(self, title, translated_title, translated_content, tags):
+        """Atualiza a notícia com a tradução e tags no Supabase."""
         response = self.client.table("news").update({
             "translated_title": translated_title,
-            "translated_content": translated_content
+            "translated_content": translated_content,
+            "entities": tags
         }).eq("title", title).execute()
 
         if response.data:
@@ -151,19 +153,28 @@ class NewsStorage:
             with open(self.file_name, "w", encoding="utf-8") as file:
                 json.dump(self.published_titles, file, indent=4, ensure_ascii=False)
 
-    def add_news_db(self, title, url, date, content, image_url, video_urls):
-        """Adiciona uma notícia ao Supabase, se não existir."""
+    def add_news_db(self, title, link, date, content, image_url, video_urls):
+        """Adiciona uma nova notícia ao banco de dados apenas se não existir."""
+        # Verifica se a notícia já existe no banco de dados
+        existing_news = self.client.table("news").select("id").eq("url", link).execute()
+
+        if existing_news.data:  # Se já existir, não adiciona
+            print(f"⚠️ Notícia '{title}' já existe no banco de dados. Pulando...")
+            return
+
         data = {
             "title": title,
-            "url": url,
+            "url": link,
             "date": date,
             "content": content,
             "image_url": image_url,
-            "video_urls": video_urls,
-            "translated_title": None,  # Inicialmente sem tradução
-            "translated_content": None
+            "video_urls": video_urls
         }
-        self.client.table("news").insert(data).execute()
-        print(f"✅ Notícia adicionada: {title}")
+
+        try:
+            self.client.table("news").insert(data).execute()
+            print(f"✅ Notícia adicionada ao banco: {title}")
+        except Exception as e:
+            print(f"❌ Erro ao adicionar notícia: {e}")
 
 
