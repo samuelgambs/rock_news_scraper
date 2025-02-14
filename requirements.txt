@@ -43,3 +43,4 @@ google-cloud-translate
 lxml
 fastapi
 uvicorn
+supabase
