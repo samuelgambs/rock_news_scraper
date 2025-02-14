@@ -30,14 +30,17 @@ class Translator:
         return result["data"]["translations"][0]["translatedText"]
 
 def translate_news(storage):
-    """Traduz notícias para português e atualiza no JSON"""
+    """Traduz notícias para português e atualiza no Supabase."""
     translator = Translator()
-
+    
     for news in storage.get_all_news():
-        if "translated_content" not in news:  # Evita traduções duplicadas
+        if not news.get("translated_content"):  # Evita retraduzir notícias já traduzidas
             print(f"🌎 Traduzindo: {news['title']}...")
+
             translated_title = translator.translate_text(news["title"])
             translated_content = translator.translate_text(news["content"])
             news["translated_title"] = translated_title
             news["translated_content"] = translated_content
-    storage.save_news(storage.get_all_news())
+
+            # Atualiza no Supabase
+            storage.update_translated_news_db(news["title"], translated_title, translated_content)

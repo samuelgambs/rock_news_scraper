@@ -3,11 +3,11 @@ import json
 import os
 
 from wordpress_xmlrpc import Client, WordPressPost
-from wordpress_xmlrpc.methods.posts import NewPost
+from wordpress_xmlrpc.methods.posts import NewPost, GetPosts
 from wordpress_xmlrpc.methods.media import UploadFile
 from wordpress_xmlrpc.methods.taxonomies import GetTerms, NewTerm
-import collections.abc
-
+from collections.abc import Iterable 
+from src.utils.news_storage import NewsStorage
 # CONFIGURAÇÕES DO WORDPRESS
 import os
 
@@ -50,26 +50,26 @@ def publish_to_wordpress(title, content, tags, image_url, video_url):
         print(f"⚠️ Notícia já publicada: {title}")
         return
     
-def get_or_create_tags(client, tags):
-    """Verifica se as tags existem no WordPress, senão cria."""
-    existing_tags = client.call(GetTerms('post_tag'))
+# def get_or_create_tags(client, tags):
+#     """Verifica se as tags existem no WordPress, senão cria."""
+#     existing_tags = client.call(GetTerms('post_tag'))
 
-    # 🔥 Alteração importante para evitar o erro
-    if not isinstance(existing_tags, collections.abc.Iterable):
-        existing_tags = []  # Garante que seja uma lista vazia caso necessário
+#     # 🔥 Alteração importante para evitar o erro
+#     if not isinstance(existing_tags, collections.abc.Iterable):
+#         existing_tags = []  # Garante que seja uma lista vazia caso necessário
 
-    existing_tag_names = {tag.name.lower(): tag for tag in existing_tags}
+#     existing_tag_names = {tag.name.lower(): tag for tag in existing_tags}
 
-    tag_ids = []
-    for tag_name in tags:
-        tag_name = tag_name.strip().lower()
-        if tag_name in existing_tag_names:
-            tag_ids.append(existing_tag_names[tag_name].id)
-        else:
-            new_tag = client.call(NewTerm({'name': tag_name, 'taxonomy': 'post_tag'}))
-            tag_ids.append(new_tag['term_id'])
+#     tag_ids = []
+#     for tag_name in tags:
+#         tag_name = tag_name.strip().lower()
+#         if tag_name in existing_tag_names:
+#             tag_ids.append(existing_tag_names[tag_name].id)
+#         else:
+#             new_tag = client.call(NewTerm({'name': tag_name, 'taxonomy': 'post_tag'}))
+#             tag_ids.append(new_tag['term_id'])
 
-    return tag_ids
+#     return tag_ids
     
 def upload_image_to_wordpress(image_url):
     """Faz upload da imagem destacada para o WordPress e retorna o ID."""
@@ -104,7 +104,16 @@ def upload_image_to_wordpress(image_url):
 
     return response['id'] if response else None
 
+def news_already_published(title):
+    """Verifica se o título já foi publicado no WordPress."""
+    client = Client(WORDPRESS_URL, WORDPRESS_USER, WORDPRESS_PASSWORD)
+    
+    posts = client.call(GetPosts({'number': 100}))  # Busca os últimos 100 posts
+    return any(post.title == title for post in posts)
+
 def postar_no_wordpress(storage):
+    # if not self.storage.news_exists(title):
+
     """Publica todas as notícias armazenadas no JSON no WordPress."""
     client = Client(WORDPRESS_URL, WORDPRESS_USER, WORDPRESS_PASSWORD)
 
@@ -120,6 +129,9 @@ def postar_no_wordpress(storage):
 
         # tags = list({ent[0] for ent in entities if ent[1] in ["ORG", "PERSON"]})
         # tag_ids = get_or_create_tags(client, tags)
+        if NewsStorage.news_exists_db(storage, titulo):
+            print(f"⚠️ Notícia já publicada no WordPress: {titulo}")
+            return
 
         # Criação do post
         post = WordPressPost()
