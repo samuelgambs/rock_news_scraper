@@ -8,6 +8,7 @@ __pycache__/
 # Ambiente virtual
 venv/
 .env
+.env.local
 *.venv
 Pipfile
 Pipfile.lock
