@@ -26,7 +26,7 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 # 🔥 Defina o limite de notícias por site
-LIMIT_PER_SITE = 10
+LIMIT_PER_SITE = 5
 
 def main():
     """Fluxo principal do script"""
