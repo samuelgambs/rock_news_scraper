@@ -1,8 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime
-from src.utils.news_storage import NewsStorage
 from src.scrapers.base_scraper import BaseScraper
+import logging
 
 class MetalTalkScraper(BaseScraper):
     def __init__(self, storage):
@@ -19,46 +18,53 @@ class MetalTalkScraper(BaseScraper):
         )
 
     def fetch_articles(self, limit=1):
-        """Coleta e armazena artigos """
-        response = requests.get(self.base_url, headers=self.headers)
-        if response.status_code != 200:
-            print(f"⚠️ Erro ao acessar {self.base_url}: {response.status_code}")
+        """Coleta e armazena artigos de Metal Talk."""
+        try:
+            response = requests.get(self.base_url, headers=self.headers)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Erro ao acessar {self.base_url}: {e}", exc_info=True)
             return []
 
         soup = BeautifulSoup(response.content, "xml")
         articles = soup.find_all(self.article_selector)[:limit]
-        
+
         for article in articles:
-            title = article.find(self.title_selector).text.strip()
-            link = article.find(self.link_selector).text.strip()
-            date = self.format_date(article.find(self.date_selector).text.strip())
-            content, image_url, video_urls = self.fetch_article_details(link)
-            
-            self.storage.add_news(title, link, date, content, image_url, video_urls)
-        
-        print(f"✅ Notícias coletadas com sucesso de Metal Talk!")
+            try:
+                title = article.find(self.title_selector).text.strip()
+                link = article.find(self.link_selector).text.strip()
+                date = self.format_date(article.find(self.date_selector).text.strip())
+                content, image_url, video_urls = self.fetch_article_details(link)
+
+                self.storage.add_news(title, link, date, content, image_url, video_urls)
+            except Exception as e:
+                logging.error(f"Erro ao processar artigo {link}: {e}", exc_info=True)
+
+        logging.info(f"Notícias coletadas com sucesso de Metal Talk!")
 
     def fetch_article_details(self, url):
         """Extrai detalhes do artigo (conteúdo, imagem e vídeos)."""
-        response = requests.get(url, headers=self.headers)
-        if response.status_code != 200:
-            print(f"⚠️ Erro ao acessar {url}: {response.status_code}")
+        try:
+            response = requests.get(url, headers=self.headers)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Erro ao acessar {url}: {e}", exc_info=True)
             return "", "", []
 
         soup = BeautifulSoup(response.content, "html.parser")
-        
-        # Captura o conteúdo principal
-        content_section = soup.select_one(self.content_selector)
-        content = content_section.get_text(separator="\n").strip() if content_section else ""
 
-        # Captura imagem
-        image_tag = soup.select_one(self.image_selector)
-        image_url = image_tag["content"] if image_tag else ""
+        try:
+            content_section = soup.select_one(self.content_selector)
+            content = content_section.get_text(separator="\n").strip() if content_section else ""
 
-        # Captura vídeos
-        video_urls = self.fetch_article_videos(url)
+            image_tag = soup.select_one(self.image_selector)
+            image_url = image_tag["content"] if image_tag else ""
 
-        return content, image_url, video_urls
+            video_urls = self.fetch_article_videos(url)
+            return content, image_url, video_urls
+        except Exception as e:
+            logging.error(f"Erro ao extrair detalhes de {url}: {e}", exc_info=True)
+            return "", "", []
 
     def format_date(self, date_str):
         """Formata a data do artigo no formato ISO 8601."""
@@ -66,4 +72,5 @@ class MetalTalkScraper(BaseScraper):
         try:
             return datetime.strptime(date_str, "%a, %d %b %Y %H:%M:%S %z").isoformat()
         except ValueError:
+            logging.warning(f"Formato de data inválido: {date_str}")
             return date_str

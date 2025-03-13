@@ -2,6 +2,10 @@ import requests
 import os
 import base64
 from requests.auth import HTTPBasicAuth
+import logging
+
+# Configuração básica do logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # 🔧 Configurações do WordPress (use variáveis de ambiente para segurança)
 WORDPRESS_URL = "https://metalneverdie.com.br"
@@ -133,9 +137,16 @@ def postar_no_wordpress(storage):
         if image_id:
             post_data["featured_media"] = image_id
 
-        response = requests.post(POSTS_ENDPOINT, json=post_data, headers=HEADERS)
+        try:
+            response = requests.post(POSTS_ENDPOINT, json=post_data, headers=HEADERS)
 
-        if response.status_code == 201:
-            print(f"✅ Post publicado com sucesso! ID: {response.json().get('id')}")
-        else:
-            print(f"❌ Erro ao publicar: {response.status_code}, {response.text}")
+            if response.status_code == 201:
+                logging.info(f"Post publicado com sucesso! ID: {response.json().get('id')}")
+                storage.mark_as_published(news["link"])  # Marca como publicado no Supabase
+            else:
+                logging.error(f"Erro ao publicar: {response.status_code}, {response.text}")
+        except requests.exceptions.RequestException as e:
+            logging.error(f"Erro de requisição ao publicar: {e}", exc_info=True)
+        except Exception as e:
+            logging.error(f"Erro inesperado ao publicar: {e}", exc_info=True)
+
