@@ -41,7 +41,7 @@ class OpenAIUtils:
         prompt = (
             "Analise o seguinte texto e extraia palavras-chave relevantes como bandas, artistas, festivais, "
             "eventos, álbuns e termos relacionados ao rock e heavy metal. "
-            "Retorne as palavras separadas por vírgulas.\n\n" + text
+            "Retorne as palavras separadas por vírgulas, limitado até 10 palavras.\n\n" + text
         )
 
         tags = self._call_openai(prompt)
