@@ -9,8 +9,8 @@ from src.scrapers.metalsucks_scraper import MetalSucksScraper
 from src.utils.news_storage import NewsStorage
 from src.utils.wordpress_publisher import postar_no_wordpress
 from dotenv import load_dotenv
-from src.utils.openai_utils import OpenAIUtils
-# from src.utils.gemini_utils import GeminiUtils
+# from src.utils.openai_utils import OpenAIUtils
+from src.utils.gemini_utils import GeminiUtils
 # Configuração básica do logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -26,7 +26,7 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 # 🔥 Defina o limite de notícias por site
-LIMIT_PER_SITE = 5
+LIMIT_PER_SITE = 10
 
 def main():
     """Fluxo principal do script"""
@@ -38,8 +38,8 @@ def main():
 
     # 📦 Inicializa o armazenamento
     storage = NewsStorage()
-    # gemini_utils = GeminiUtils()
-    openai_utils = OpenAIUtils()
+    gemini_utils = GeminiUtils()
+    # openai_utils = OpenAIUtils()
 
 
     # 📰 Lista de scrapers
@@ -68,7 +68,10 @@ def main():
 
     # 2️⃣ Traduzir antes de processar as entidades
     logging.info("Traduzindo notícias para Português...")
-    openai_utils.translate_news(storage)
+    # openai_utils.translate_news(storage)
+    gemini_utils.translate_news(storage)
+
+    
 
     # 4️⃣ Publicar no WordPress
     logging.info("Publicando notícias no WordPress...")
