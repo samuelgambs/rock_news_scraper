@@ -9,7 +9,7 @@ class GeminiUtils:
             raise ValueError("⚠️ A chave da API GEMINI_API_KEY não foi definida.")
 
         genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel("gemini-pro")
+        self.model = genai.GenerativeModel("gemini-2.0-flash-lite")
 
     def translate_text(self, text, target_language="Portuguese"):
         """
@@ -21,7 +21,7 @@ class GeminiUtils:
         if not text.strip():
             return ""
 
-        prompt = f"Traduza o seguinte texto para {target_language}: \n\n{text}"
+        prompt = f"Analise o {text}, e retorne somente a tradução em portugues sem mais textos e/ou comentários adicionais, pois estamos publicando no wordpress "
         
         try:
             response = self.model.generate_content(prompt)
@@ -37,8 +37,10 @@ class GeminiUtils:
         :return: Lista de tags extraídas.
         """
         prompt = f"""
-        Extraia as principais palavras-chave (tags) deste texto relacionado ao mundo do rock e heavy metal.
-        Retorne apenas uma lista separada por vírgulas, sem explicações. Evite palavras genéricas.
+        Analise o seguinte texto e extraia palavras-chave relevantes como bandas, artistas, festivais, 
+        eventos, álbuns e termos relacionados ao rock e heavy metal. 
+
+        Retorne as palavras separadas por vírgulas, limitado até 10 palavras.
 
         Texto: {text}
         """

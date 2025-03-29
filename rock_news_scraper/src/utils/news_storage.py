@@ -116,14 +116,14 @@ class NewsStorage:
         except Exception as e:
             logging.error(f"Erro ao adicionar notícia: {e}", exc_info=True)
             
-def mark_as_published(self, link):
-        """Marca a notícia como publicada no Supabase e atualiza published_at."""
-        try:
-            now = datetime.utcnow().isoformat()  # Obtém o timestamp UTC atual
-            response = self.client.table("news").update({"published": True, "published_at": now}).eq("url", link).execute()
-            if response.data:
-                logging.info(f"Notícia marcada como publicada: {link} - published_at: {now}")
-            else:
-                logging.warning(f"Falha ao marcar notícia como publicada: {link}")
-        except Exception as e:
-            logging.error(f"Erro ao marcar notícia como publicada: {e}", exc_info=True)
+    def mark_as_published(self, link):
+            """Marca a notícia como publicada no Supabase e atualiza published_at."""
+            try:
+                now = datetime.utcnow().isoformat()  # Obtém o timestamp UTC atual
+                response = self.client.table("news").update({"published": True, "published_at": now}).eq("url", link).execute()
+                if response.data:
+                    logging.info(f"Notícia marcada como publicada: {link} - published_at: {now}")
+                else:
+                    logging.warning(f"Falha ao marcar notícia como publicada: {link}")
+            except Exception as e:
+                logging.error(f"Erro ao marcar notícia como publicada: {e}", exc_info=True)
